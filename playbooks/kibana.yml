@@ -1,0 +1,64 @@
+  - name: "Download/Extract the Kibana Tarball"
+    unarchive:
+      src: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ ES_VERSION }}-linux-x86_64.tar.gz"
+      dest: "{{ kibana_base_path }}"
+      remote_src: yes
+
+  - name: "Fix Kibana Path"
+    # thanks, ansible
+    command: /bin/sh -c 'rm -Rf {{ KB_PATH }}; sleep 1; mv -f {{ kibana_base_path }}/kibana-{{ ES_VERSION }}* {{ KB_PATH }}'
+
+  - name: "Create group {{ KB_GRP }}"
+    # This is a security need -- running as dedicated user and group to 
+    # safegaurd against any arbitrary code execution or filesystem access 
+    # exploits.  And also cats.
+    group:
+      name: "{{ KB_GRP }}"
+      state: present
+
+  - name: "Create user {{ KB_USR }}"
+    user:
+      name: "{{ KB_USR }}"
+        # Important.  Prevents ability to log in remotely as the service 
+        # account.  Password is also not set to further ensure that doesn't 
+        # happen.  Existing accounts with proper sudoer permissions excepted.
+      shell: "/bin/nologin"
+      group: "{{ KB_GRP }}"
+
+  - name: "Install kibana configuration"
+    template: src=../templates/kibana.yml.jinja2 dest=/etc/kibana.yml force=yes 
+
+    # set the permissions on the directory
+  - name: "Set ownership of {{ KB_HOME }} recursively to {{ KB_USR }}:{{ KB_GRP }}"
+    file: dest={{ KB_HOME }} owner={{ KB_USR }} group={{ KB_GRP }} recurse=yes
+
+  - name: "Create the pid dir"
+    file:
+      path: "{{ KB_PID_PATH }}"
+      state: directory
+
+  - name: "Place systemd system unit target"
+    # Need to do this outside of the systemd module so we can use a template
+    template: src=../templates/kibana.service.jinja2 dest=/etc/systemd/system/kibana.service force=yes
+  - name: "Enable systemd system unit target"
+    systemd:
+        name: "kibana"
+        enabled: yes
+        masked: no
+        state: restarted
+        daemon_reload: yes
+
+  - name: "Install Reverse ProxyPass VirtualHost for Kibana"
+    template: src=../templates/kibana_httpd.conf.jinja2 dest=/etc/apache2/sites-available/kibana.conf force=yes
+
+  - name: "Enabling the ProxyPass for Kibana Apache VHost"
+    command: a2ensite kibana
+
+  # remove when done
+  - name: "Reload/Restart the Apache Service"
+    systemd:
+      name: "apache2"
+      enabled: yes
+      masked: no
+      state: restarted
+

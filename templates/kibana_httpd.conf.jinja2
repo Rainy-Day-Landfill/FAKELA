@@ -1,0 +1,41 @@
+# rendered on {{ template_run_date }}
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+    ServerName {{ KB_INSTANCE_DNS_NAME }}
+
+    ErrorLog /var/log/apache2/{{ KB_INSTANCE_DNS_NAME }}_error.log
+    CustomLog /var/log/apache2/{{ KB_INSTANCE_DNS_NAME }}_all.log combined
+
+    # :) 
+    # SSLEngine On
+    # SSLProxyEngine on
+    # SSLCertificateFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME }}/cert.pem
+    # SSLCertificateKeyFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME }}/privkey.pem
+    # SSLCertificateChainFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME}}/chain.pem
+
+    # MITIGATE CRIME
+    #SSLCompression Off
+
+    #SSLCipherSuite ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4:!RSA
+
+    # Identical for proxy
+    #SSLProxyCipherSuite ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4:!RSA
+
+    #Force the order server side
+    #SSLHonorCipherOrder on
+
+    # Disable SSLv3 (with recent versions of OpenSSL, older should already be disabled, but can explicitly deny them if still using 0.9.8 for some reason).
+    #SSLProtocol all -SSLv3
+    #SSLProxyProtocol all -SSLv3
+
+    # AllowOverride All
+    ServerAdmin punches.chris@gmail.com  
+  
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ServerAlias {{ KB_INSTANCE_DNS_NAME }}
+    ProxyPass / http://127.0.0.1:{{ KB_PORT }}/
+    ProxyPassReverse / http://127.0.0.1:{{ KB_PORT }}/ 
+</VirtualHost>
+

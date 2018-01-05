@@ -1,0 +1,22 @@
+  - name: "Download dedicated Java Runtime"
+    # It is a dependency and the JRE available can't be assumed to be 
+    # compatible or even present.  In addition to this, a 
+    # distribution-independent solution here would not use the package 
+    # manager due to package name disparity between distributions.  This is 
+    # resolved by having an internal package repository for any runtime 
+    # components used for all OS's in the environment, which is generally a 
+    # good idea when OS continuity is not feasible in an environment.
+    #
+    # This Java task needs more abstraction.
+    # Can't use get_url here or it'll fail.  Oracle requires magic that OpenJDK doesn't.
+    shell: 'wget -P /tmp/ --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" {{ JDK_URL }}'
+
+  - name: "Extract Java Development Kit"
+    unarchive: src=/tmp/{{ JDK_FILENAME }} dest={{ ES_HOME }} remote_src=yes
+
+  - name: "Fix Java Path"
+    # Thanks, ansible
+    command: /bin/sh -c 'rm -Rf {{ JDK_PATH }}; sleep 1; mv -f {{ ES_HOME }}/jdk* {{ JDK_PATH }}'
+
+  - name: "Set ownership of {{ JDK_PATH }} recursively to {{ ES_USR }}:{{ ES_GRP }}"
+    file: dest={{ JDK_PATH }} owner={{ ES_USR }} group={{ ES_GRP }} recurse=yes
