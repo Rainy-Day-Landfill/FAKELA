@@ -46,8 +46,8 @@
     # Later moved to JDK because oracle jammed up the download URLs.
 
     # jvm options as needed
-    ES_HEAP_INITIAL: "500m"
-    ES_HEAP_MAX: "500m"
+    ES_HEAP_INITIAL: "1g"
+    ES_HEAP_MAX: "1g"
 
     #################################
     ## JAVA OPTIONS
@@ -82,10 +82,17 @@
     FB_HOME: "{{ filebeat_base_path }}/filebeat-{{ ES_VERSION }}"
     FB_PID_PATH: "/var/run/filebeat"  
     FB_CONF: "{{ FB_PATH }}/filebeat.yml"
+    FB_INDEX_NAME: "almost-journald"
+    FB_INSTANCE_DNS_NAME: "kibana.silogroup.org"
 
+    ANSIBLE_URI_HACK_ES_INDEX:
+      defaultIndex: "{{ FB_INDEX_NAME }}"
+      _hack: null 
+     
   tasks:
     - import_tasks: apache2.yml
     - import_tasks: elasticsearch.yml
     - import_tasks: java.yml
     - import_tasks: kibana.yml
     - import_tasks: filebeat.yml
+    - import_tasks: filebeat_acls.yml

@@ -1,3 +1,12 @@
+#  - name: "Reset the Kibana index"
+#    uri:
+#      url: "http://{{ ES_INSTANCE_DNS_NAME }}/.kibana"
+#      method: DELETE
+# Ansible URI module ignores below, and is problematic.  
+# dropping to command.
+#      ignore_errors: true
+
+
   - name: "Download/Extract the Kibana Tarball"
     unarchive:
       src: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ ES_VERSION }}-linux-x86_64.tar.gz"
@@ -37,6 +46,10 @@
       path: "{{ KB_PID_PATH }}"
       state: directory
 
+  - name: "Reset the Kibana Index"
+    command: "curl -XPOST \"http://elasticsearch.silogroup.org/.kibana/doc/index-pattern:almost-journald\" -H \"Content-Type: application/json\" -d \"{  \"type\" : \"index-pattern\",  \"index-pattern\" : { \"title\": \"{{ FB_INDEX_NAME }}\", \"timeFieldName\": \"execution_time\"  }}\""
+    ignore_errors: true
+      
   - name: "Place systemd system unit target"
     # Need to do this outside of the systemd module so we can use a template
     template: src=../templates/kibana.service.jinja2 dest=/etc/systemd/system/kibana.service force=yes
