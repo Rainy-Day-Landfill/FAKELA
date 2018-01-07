@@ -35,7 +35,17 @@ NameVirtualHost *:80
     ProxyRequests Off
     ProxyPreserveHost On
     ServerAlias {{ ES_INSTANCE_DNS_NAME }}
+    
+    # internal -- recommended for production for stability and security concerns
     ProxyPass / http://127.0.0.1:{{ ES_PORT }}/
-    ProxyPassReverse / http://127.0.0.1:{{ ES_PORT }}/ 
+    ProxyPassReverse / http://127.0.0.1:{{ ES_PORT }}/
+    
+    # external -- juuust in case
+    # If you use these you will need to update the port used in the 
+    # ES/KB/FB config for options pointing to elasticsearch
+    # Do not use these options.  Placeholder for Perf testing and debugging.
+    #ProxyPass / http://{{ ES_INSTANCE_DNS_NAME }}:{{ ES_PORT }}/
+    #ProxyPassReverse / http://{{ ES_INSTANCE_DNS_NAME }}:{{ ES_PORT }}/ 
+
 </VirtualHost>
 

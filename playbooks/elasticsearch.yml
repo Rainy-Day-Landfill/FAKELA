@@ -24,20 +24,24 @@
     template: src=../templates/elasticsearch_environment.jinja2 dest={{ ES_ENV_FILE }} force=yes
 
   - name: "Install elasticsearch configuration"
-    template: src=../templates/elasticsearch.yml.jinja2 dest=/etc/elasticsearch.yml force=yes
+    template: src=../templates/elasticsearch.yml.jinja2 dest={{ ES_CONF }}/elasticsearch.yml force=yes
 
     # set the permissions on the directory
   - name: "Set ownership of {{ ES_HOME }} recursively to {{ ES_USR }}:{{ ES_GRP }}"
-    file: dest={{ ES_HOME }} owner={{ ES_USR }} group={{ ES_GRP }} recurse=yes
+    file: dest="{{ ES_HOME }}" owner="{{ ES_USR }}" group="{{ ES_GRP }}" recurse=yes
   - name: "Create logs dir"
     file:
       path: "{{ ES_LOGS }}"
       state: directory
+      owner: elasticsearch
+      group: elasticsearch
 
   - name: "Create the pid dir"
     file:
       path: "{{ ES_PID_PATH }}"
       state: directory
+      owner: elasticsearch
+      group: elasticsearch
 
   - name: "Place systemd system unit target"
     # Need to do this outside of the systemd module so we can use a template
@@ -47,8 +51,22 @@
         name: "elasticsearch"
         enabled: yes
         masked: no
-        state: restarted
+        state: stopped
         daemon_reload: yes
+
+  - name: "Weird HotFix for MAX_MAP_COUNT"
+    # ubuntu-specific hotfix #1
+    command: "echo 'vm.max_map_count = 262144' >> /etc/sysctl.d/elasticsearch.conf"
+       
+
+  # remove when done
+  - name: "Restart ElasticSearch"
+    systemd:
+      name: "elasticsearch"
+      state: started
+
+
+
 
   - name: "Install Reverse ProxyPass VirtualHost for ElasticSearch"
     template: src=../templates/elasticsearch_httpd.conf.jinja2 dest=/etc/apache2/sites-available/elasticsearch.conf force=yes

@@ -14,12 +14,9 @@
     # the port that ES listens on
     ES_PORT: "9200"
     # the addr to bind to
-    # This is actually ignored by Elasticsearch as far as I can tell.
-    # They have security concerns with exposing the port.
-    # Leaving it here for when they decide to update their docs or make 
-    # it work.
-    # Workaround is to expose it through a reverse/proxypass directive with apache 
-    ES_BIND_HOST: "0.0.0.0"
+    # use internal IP and proxypass from apache, it is safer, more 
+    # stable, and more performant
+    ES_BIND_HOST: "127.0.0.1"
     ES_INSTANCE_DNS_NAME: "elasticsearch.silogroup.org"
 
     # the url from which elasticsearch should be downloaded from
@@ -84,10 +81,6 @@
     FB_CONF: "{{ FB_PATH }}/filebeat.yml"
     FB_INDEX_NAME: "almost-journald"
     FB_INSTANCE_DNS_NAME: "kibana.silogroup.org"
-
-    ANSIBLE_URI_HACK_ES_INDEX:
-      defaultIndex: "{{ FB_INDEX_NAME }}"
-      _hack: null 
      
   tasks:
     - import_tasks: apache2.yml
@@ -96,3 +89,5 @@
     - import_tasks: kibana.yml
     - import_tasks: filebeat.yml
     - import_tasks: filebeat_acls.yml
+    - import_tasks: restart_services.yml
+    

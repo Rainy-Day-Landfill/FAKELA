@@ -21,7 +21,7 @@ cluster.name: "{{ ES_INSTANCE_NAME }}"
 #
 # Use a descriptive name for the node:
 #
-node.name: {{ ES_INSTANCE_NAME }}-1
+node.name: "{{ ES_INSTANCE_NAME }}-1"
 #
 # Add custom attributes to the node:
 #
@@ -35,7 +35,7 @@ path.data: {{ ES_DATA }}
 #
 # Path to log files:
 #
-path.logs = {{ ES_LOGS }}
+path.logs: "{{ ES_LOGS }}"
 #
 # ----------------------------------- Memory -----------------------------------
 #
@@ -54,12 +54,12 @@ path.logs = {{ ES_LOGS }}
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
 # it just blatantly ignores these settings
-network.bind_host: {{ ansible_eth0.ipv4.address }}
-network.host: {{ ansible_eth0.ipv4.address }}
+network.bind_host: "{{ ES_BIND_HOST }}"
+network.host: "{{ ES_BIND_HOST }}"
 #
 # Set a custom port for HTTP:
 #
-http.port: {{ ES_PORT }}
+http.port: "{{ ES_PORT }}"
 #
 # For more information, consult the network module documentation.
 #

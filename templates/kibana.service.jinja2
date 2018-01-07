@@ -7,11 +7,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-# Why did someone think they need this?
 RuntimeDirectory=kibana
-Environment=ES_HOME={{ KB_HOME }}
-Environment=ES_PATH_CONF={{ KB_CONF }}
-
 WorkingDirectory={{ KB_HOME }}
 
 User={{ KB_USR }}

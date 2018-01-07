@@ -144,7 +144,7 @@ setup.kibana:
 #-------------------------- Elasticsearch output ------------------------------
 output.elasticsearch:
   # Array of hosts to connect to.
-  hosts: ["{{ ES_INSTANCE_DNS_NAME }}"]
+  hosts: ["{{ ES_INSTANCE_DNS_NAME }}:80"]
   index: "{{ FB_INDEX_NAME }}"
   # Optional protocol and basic auth credentials.
   #protocol: "https"

@@ -35,7 +35,7 @@
       group: "{{ KB_GRP }}"
 
   - name: "Install kibana configuration"
-    template: src=../templates/kibana.yml.jinja2 dest=/etc/kibana.yml force=yes 
+    template: src=../templates/kibana.yml.jinja2 dest={{ KB_CONF }} force=yes 
 
     # set the permissions on the directory
   - name: "Set ownership of {{ KB_HOME }} recursively to {{ KB_USR }}:{{ KB_GRP }}"
@@ -46,9 +46,20 @@
       path: "{{ KB_PID_PATH }}"
       state: directory
 
-  - name: "Reset the Kibana Index"
-    command: "curl -XPOST \"http://elasticsearch.silogroup.org/.kibana/doc/index-pattern:almost-journald\" -H \"Content-Type: application/json\" -d \"{  \"type\" : \"index-pattern\",  \"index-pattern\" : { \"title\": \"{{ FB_INDEX_NAME }}\", \"timeFieldName\": \"execution_time\"  }}\""
-    ignore_errors: true
+  - name: "Delete the Kibana Index"
+    # this is a hack because none of these services are actually api driven internally
+    command: "curl -XDELETE \"http://{{ ES_INSTANCE_DNS_NAME }}/.kibana\" -H \"Content-Type: application/json\""
+    ignore_errors: yes
+
+  - name: "Set Default Index Pattern"
+    command: "curl -XPOST \"http://{{ ES_INSTANCE_DNS_NAME }}/.kibana/doc/index-pattern:{{ FB_INDEX_NAME }}\" -H \"Content-Type: application/json\" -d \"{  \"type\" : \"index-pattern\",  \"index-pattern\" : { \"title\": \"{{ FB_INDEX_NAME }}\", \"timeFieldName\": \"@timestamp\"  } }\""
+
+  - name: "Create the log dir"
+    file:
+      path: "{{ KB_LOGS }}"
+      state: directory
+      owner: "{{ KB_USR }}"
+      group: "{{ KB_GRP }}"
       
   - name: "Place systemd system unit target"
     # Need to do this outside of the systemd module so we can use a template

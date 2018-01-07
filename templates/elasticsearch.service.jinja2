@@ -7,7 +7,6 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-# Why did someone think they need this?
 RuntimeDirectory=elasticsearch
 Environment=ES_HOME={{ ES_HOME }}
 Environment=ES_PATH_CONF={{ ES_CONF }}
@@ -40,9 +39,7 @@ LimitNPROC=4096
 LimitAS=infinity
 
 # Specifies the maximum file size
-# Assume EXT4 unless told otherwise
-# If a file is larger than 16T there are other issues.
-LimitFSIZE=16000000000000
+LimitFSIZE=infinity
 
 # Disable timeout logic and wait until process is stopped
 TimeoutStopSec=0
