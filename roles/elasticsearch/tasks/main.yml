@@ -35,15 +35,15 @@
     file:
       path: "{{ es_logs_dir }}"
       state: directory
-      owner: elasticsearch
-      group: elasticsearch
+      owner: "{{ es_service_user }}"
+      group: "{{ es_service_group }}"
 
   - name: "Create the pid dir"
     file:
       path: "{{ es_pid_dir }}"
       state: directory
-      owner: elasticsearch
-      group: elasticsearch
+      owner: "{{ es_service_user }}"
+      group: "{{ es_service_group }}"
 
   - name: "Download dedicated Java Runtime"
     # It is a dependency and the JRE available can't be assumed to be 
@@ -73,13 +73,34 @@
     template: src=systemd_unit.service.jinja2 dest=/etc/systemd/system/elasticsearch.service force=yes
 
   # This is for the apache socket handling and routing
+  # Trust apache security more than ES and KB.
   - name: "Install Reverse ProxyPass VirtualHost for ElasticSearch"
     template: src=elasticsearch_httpd.conf.jinja2 dest=/etc/apache2/sites-available/elasticsearch.conf force=yes
+    
+  - stat: path=/tmp/x-pack-{{ xp_version }}.zip
+    register: xp_downloaded
 
-  # This is for the apache socket handling and routing
+  - stat: path="{{ es_home_dir }}/plugins/x-pack"
+    register: xp_installed
+
+    # security features for elasticsearch / kibana
+    # challenge /was/ to operationalize 
+  - name: "Download X-Pack for Security Features - This Will Take Some Time"
+    shell: 'wget -P /tmp/ --no-check-certificate -c https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-{{ xp_version }}.zip'
+    when: xp_downloaded.stat.exists == False
+    
+  - name: "Install X-Pack for Security Features"
+    shell: 'JAVA_HOME={{ java_home_dir }} {{ es_home_dir }}/bin/elasticsearch-plugin install --batch file:///tmp/x-pack-{{ xp_version }}.zip'
+    when: xp_installed.stat.exists == False
+
   - name: "Enabling the site for ElasticSearch Apache VHost"
     command: a2ensite elasticsearch
     notify:
     - "Restart Apache"
     - "Restart ElasticSearch"
-
+    
+  - name: "Inject default Superuser"
+    # URI module is broken/unreliable
+    command: "/bin/sh -c 'JAVA_HOME={{ java_home_dir }} {{ es_home_dir }}/bin/x-pack/users useradd {{ es_username }} -p {{ es_password }} -r superuser'"
+    ignore_errors: yes
+    

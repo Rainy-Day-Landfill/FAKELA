@@ -57,6 +57,22 @@
     # Need to do this outside of the systemd module so we can use a template
     template: src=kibana.service.jinja2 dest=/etc/systemd/system/kibana.service force=yes
 
+  - stat: path=/tmp/x-pack-{{ xp_version }}.zip
+    register: xp_downloaded
+
+    # security features for elasticsearch / kibana
+    # challenge /was/ to operationalize 
+  - name: "Download X-Pack for Security Features - This Will Take Some Time"
+    shell: 'wget -P /tmp/ --no-check-certificate -c https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-{{ xp_version }}.zip'
+    when: xp_downloaded.stat.exists == False
+    
+  - stat: path="{{ kb_home_dir }}/plugins/x-pack"
+    register: xp_installed
+
+  - name: "Install X-Pack for Security Features"
+    shell: '{{ kb_home_dir }}/bin/kibana-plugin install file:///tmp/x-pack-{{ xp_version }}.zip'
+    when: xp_installed.stat.exists == False
+
   - name: "Install Reverse ProxyPass VirtualHost for Kibana"
     template: src=kibana_httpd.conf.jinja2 dest=/etc/apache2/sites-available/kibana.conf force=yes
 

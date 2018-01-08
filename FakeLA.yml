@@ -5,6 +5,8 @@
   become: true
   roles:
   - apache2
+  vars:
+    firewall_port: 80
 
 - name: ElasticSearch Installation
   hosts: target_host
@@ -16,6 +18,12 @@
     elasticsearch_base_path: /opt 
     es_instance_name: "interpolation-buffet"
     es_dns_name: "elasticsearch.silogroup.org"
+    default_index_name: "almost-journald"
+    es_username: "bagira"
+    es_password: "this_is_not_my_superpower"
+    # security features for elasticsearch / kibana
+    # challenge /was/ to operationalize     
+    xp_version: "6.1.1"
 
 - name: Kibana Installation
   hosts: target_host
@@ -24,6 +32,9 @@
   roles:
   - kibana
   vars:
+    es_username: "bagira"
+    es_password: "this_is_not_my_superpower"
+    
     kibana_base_path: "/opt"
     kb_version: "6.1.1"
     es_instance_name: "interpolation-buffet"
@@ -32,6 +43,8 @@
     
     kb_dns_name: "kibana.silogroup.org" 
     kb_instance_name: "{{ es_instance_name }}"
+    
+    xp_version: "6.1.1"
 
 - name: Filebeat Installation
   hosts: target_host
@@ -49,8 +62,8 @@
     - "/var/log/syslog"
     # RH
     #- "/var/log/messages"
-
-- name: Production Hotfixes - Run Once
+    
+- name: Production Hotfixes - Will Reboot
   hosts: target_host
   remote_user: "root"
   become: true

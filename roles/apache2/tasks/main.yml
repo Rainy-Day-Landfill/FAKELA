@@ -13,9 +13,21 @@
     notify:
     - Restart Apache
 
-  - name: "Enable TCP 80 - The only external port needed."
-    firewalld:
-      port: 80/tcp
-      permanent: true
-      state: enabled
+    # removing this will make ansible cut off its own access to the server
+  - name: "Enable TCP 22 - The only external port needed."
+    ufw:
+      port: "{{ firewall_port }}"
+      rule: allow
+      proto: tcp
+      state: disabled
 
+  # obscurity is not security and these services' loads will not compete
+  # make sure to have DNS caching enabled for high volume environments
+  # really high.  like backbone high  == in exchange for less human errors
+  # by staff
+  - name: "Enable TCP 80 - The only external port needed."
+    ufw:
+      port: "{{ firewall_port }}"
+      rule: allow
+      proto: tcp
+      state: disabled
