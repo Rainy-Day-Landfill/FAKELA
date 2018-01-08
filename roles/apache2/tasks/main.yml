@@ -12,3 +12,10 @@
     command: a2enmod proxy_http
     notify:
     - Restart Apache
+
+  - name: "Enable TCP 80 - The only external port needed."
+    firewalld:
+      port: 80/tcp
+      permanent: true
+      state: enabled
+
