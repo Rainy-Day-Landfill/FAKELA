@@ -1,19 +1,23 @@
 # rendered on {{ template_run_date }}
 # updated
 [Unit]
-Description=Kibana
+Description=Filebeat
 Documentation=http://www.elastic.co
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-RuntimeDirectory=kibana
-WorkingDirectory={{ KB_HOME }}
+RuntimeDirectory=filebeat
+Environment=ES_HOME={{ fb_home_dir }}
+Environment=ES_PATH_CONF={{ fb_conf_dir }}
 
-User={{ KB_USR }}
-Group={{ KB_GRP }}
+WorkingDirectory={{ fb_home_dir }}
 
-ExecStart={{ KB_HOME }}/bin/kibana -c {{ KB_CONF }}
+User={{ fb_service_user }}
+Group={{ fb_service_group }}
+
+ExecStart={{ fb_home_dir }}/filebeat -c {{ fb_conf_dir }}
+Restart=always
 
 # StandardOutput is configured to redirect to journalctl since
 # some error messages may be logged in standard output before
@@ -24,31 +28,11 @@ ExecStart={{ KB_HOME }}/bin/kibana -c {{ KB_CONF }}
 StandardOutput=journal
 StandardError=inherit
 
-# Specifies the maximum file descriptor number that can be opened by this process
-LimitNOFILE=65536
-
-# Specifies the maximum number of processes
-LimitNPROC=4096
-
-# Specifies the maximum size of virtual memory
-LimitAS=infinity
 
 # Specifies the maximum file size
 # Assume EXT4 unless told otherwise
 # If a file is larger than 16T there are other issues.
 LimitFSIZE=16000000000000
-
-# Disable timeout logic and wait until process is stopped
-TimeoutStopSec=0
-
-# SIGTERM signal is used to stop the Java process
-KillSignal=SIGTERM
-
-# Send the signal only to the JVM rather than its control group
-KillMode=process
-
-SendSIGKILL=yes
-
 
 [Install]
 WantedBy=multi-user.target

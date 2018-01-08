@@ -1,0 +1,104 @@
+---
+- name: Apache2 Installation
+  hosts: Presentation
+  remote_user: "root"
+  become: true
+  roles:
+  - kibana_role
+  - elasticsearch_role
+  
+  vars_files:
+      - elasticsearch/vars.yml
+      - java/vars.yml
+      - kibana/vars.yml
+  tasks:
+    - import_tasks: apache2/apache2.yml
+
+- name: ElasticSearch Installation
+  hosts: Backend
+  remote_user: "root"
+  become: true
+  roles:
+  - elasticsearch_role
+
+  vars_files:
+      - elasticsearch/vars.yml
+      - java/vars.yml
+  vars:
+    # All configuration items we should ever care about should be here.
+    elasticsearch_base_path: /opt 
+  tasks:
+    - import_tasks: elasticsearch/elasticsearch.yml
+    - import_tasks: java/java.yml
+
+- name: Kibana Installation
+  hosts: Presentation
+  remote_user: "root"  
+  become: true
+  roles:
+  - kibana_role
+  vars_files:
+      - elasticsearch/vars.yml
+      - kibana/vars.yml
+  vars:
+    # All configuration items we should ever care about should be here.
+    kibana_base_path: /opt
+    elasticsearch_base_path: /opt 
+  tasks:
+    - import_tasks: kibana/kibana.yml
+
+- name: Filebeat Installation
+  hosts: Listeners
+  remote_user: "root"
+  become: true
+  roles:
+  - filebeat_role
+  vars_files:
+      - elasticsearch/vars.yml
+      - kibana/vars.yml
+      - filebeat/vars.yml
+  vars:
+    # All configuration items we should ever care about should be here.
+    filebeat_base_path: /opt
+
+  tasks:
+    - import_tasks: filebeat/filebeat.yml
+    - import_tasks: filebeat/filebeat_acls.yml
+
+
+
+
+- name: HotFixes
+  hosts: Listeners
+  remote_user: "root"
+  become: true
+  roles:
+  - Backend
+
+  tasks:
+    - import_tasks: filebeat/filebeat.yml
+    - import_tasks: hotfixes/hotfixes.yml
+
+
+#- hosts: 
+#    - target_host
+#
+#  vars_files:
+#      - elasticsearch/vars.yml
+#      - java/vars.yml
+#      - kibana/vars.yml
+#
+#  vars:
+#    # All configuration items we should ever care about should be here.
+#    kibana_base_path: /opt
+#    filebeat_base_path: /opt
+#    elasticsearch_base_path: /opt 
+#          
+#  tasks:
+#    - import_tasks: apache2/apache2.yml
+#    - import_tasks: elasticsearch/elasticsearch.yml
+#    - import_tasks: java/java.yml
+#    - import_tasks: kibana/kibana.yml
+#    - import_tasks: filebeat/filebeat.yml
+#    - import_tasks: filebeat/filebeat_acls.yml
+#    - import_tasks: hotfixes/hotfixes.yml

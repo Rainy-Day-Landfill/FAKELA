@@ -1,4 +1,5 @@
-  - name: "Install Apache2"
+## TODO: OS Abstraction
+  - name: "Install Apache2 on Ubuntu 16.04 LTS"
     apt:  
       name: apache2
       state: present

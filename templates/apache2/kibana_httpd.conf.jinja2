@@ -2,17 +2,17 @@
 NameVirtualHost *:80
 
 <VirtualHost *:80>
-    ServerName {{ KB_INSTANCE_DNS_NAME }}
+    ServerName {{ kb_dns_name }}
 
-    ErrorLog /var/log/apache2/{{ KB_INSTANCE_DNS_NAME }}_error.log
-    CustomLog /var/log/apache2/{{ KB_INSTANCE_DNS_NAME }}_all.log combined
+    ErrorLog /var/log/apache2/{{ kb_dns_name }}_error.log
+    CustomLog /var/log/apache2/{{ kb_dns_name }}_all.log combined
 
     # :) 
     # SSLEngine On
     # SSLProxyEngine on
-    # SSLCertificateFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME }}/cert.pem
-    # SSLCertificateKeyFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME }}/privkey.pem
-    # SSLCertificateChainFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME}}/chain.pem
+    # SSLCertificateFile /var/www/certs/{{ kb_dns_name }}/cert.pem
+    # SSLCertificateKeyFile /var/www/certs/{{ kb_dns_name }}/privkey.pem
+    # SSLCertificateChainFile /var/www/certs/{{ kb_dns_name}}/chain.pem
 
     # MITIGATE CRIME
     #SSLCompression Off
@@ -34,8 +34,8 @@ NameVirtualHost *:80
   
     ProxyRequests Off
     ProxyPreserveHost On
-    ServerAlias {{ KB_INSTANCE_DNS_NAME }}
-    ProxyPass / http://127.0.0.1:{{ KB_PORT }}/
-    ProxyPassReverse / http://127.0.0.1:{{ KB_PORT }}/ 
+    ServerAlias {{ kb_dns_name }}
+    ProxyPass / http://127.0.0.1:{{ kb_port }}/
+    ProxyPassReverse / http://127.0.0.1:{{ kb_port }}/ 
 </VirtualHost>
 

@@ -77,8 +77,8 @@ filebeat.config.modules:
   #reload.period: 10s
 
 #==================== Elasticsearch template setting ==========================
-setup.template.name: "{{ FB_INDEX_NAME }}"
-setup.template.pattern: "{{ FB_INDEX_NAME }}"
+setup.template.name: "{{ fb_index_name }}"
+setup.template.pattern: "{{ fb_index_name }}"
 setup.template.settings:
   index.number_of_shards: 3
   index.codec: best_compression
@@ -122,7 +122,11 @@ setup.kibana:
   # Scheme and port can be left out and will be set to the default (http and 5601)
   # In case you specify and additional path, the scheme is required: http://localhost:5601/path
   # IPv6 addresses should always be defined as: https://[2001:db8::1]:5601
-  host: "kibana.silogroup.org:80"
+
+  # use the apache for this, it gives you alot more options for security configuration
+  # in case you want a lightweight solution or already have an internal auth system 
+  # that you want this to plug into. -C
+  host: "{{ kb_dns_name }}:80"
 
 #============================= Elastic Cloud ==================================
 
@@ -144,8 +148,8 @@ setup.kibana:
 #-------------------------- Elasticsearch output ------------------------------
 output.elasticsearch:
   # Array of hosts to connect to.
-  hosts: ["{{ ES_INSTANCE_DNS_NAME }}:80"]
-  index: "{{ FB_INDEX_NAME }}"
+  hosts: ["{{ es_dns_name }}:80"]
+  index: "{{ fb_index_name }}"
   # Optional protocol and basic auth credentials.
   #protocol: "https"
   #username: "elastic"

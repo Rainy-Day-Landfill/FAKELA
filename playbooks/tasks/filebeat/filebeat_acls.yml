@@ -4,10 +4,9 @@
       state: present
 
   - name: "Add access rights for systemlogs to Filebeat user/group"
-    acl: name={{ item }}  entity={{ FB_USR }}  etype=user permissions="r" state=present
+    acl: name={{ item }}  entity={{ fb_service_user }}  etype=user permissions="r" state=present
     with_items:
-      - "{{ FB_INDEX_SYSLOG }}"
-#      - /var/log/messages
+      fb.file_to_index
 
     # remove when done
   - name: "Reload/Restart the Filebeat Service"

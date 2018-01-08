@@ -2,27 +2,24 @@
 NameVirtualHost *:80
 
 <VirtualHost *:80>
-    ServerName {{ ES_INSTANCE_DNS_NAME }}
+    ServerName {{ es_dns_name }}
 
-    ErrorLog /var/log/apache2/{{ ES_INSTANCE_DNS_NAME }}_error.log
-    CustomLog /var/log/apache2/{{ ES_INSTANCE_DNS_NAME }}_all.log combined
+    ErrorLog /var/log/apache2/{{ es_dns_name }}_error.log
+    CustomLog /var/log/apache2/{{ es_dns_name }}_all.log combined
 
     # :) 
     # SSLEngine On
     # SSLProxyEngine on
-    # SSLCertificateFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME }}/cert.pem
-    # SSLCertificateKeyFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME }}/privkey.pem
-    # SSLCertificateChainFile /var/www/certs/{{ ES_INSTANCE_DNS_NAME}}/chain.pem
-
-    # MITIGATE CRIME
+    # SSLCertificateFile /var/www/certs/{{ es_dns_name }}/cert.pem
+    # SSLCertificateKeyFile /var/www/certs/{{ es_dns_name }}/privkey.pem
+    # SSLCertificateChainFile /var/www/certs/{{ es_dns_name }}/chain.pem
     #SSLCompression Off
-
     #SSLCipherSuite ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4:!RSA
 
     # Identical for proxy
     #SSLProxyCipherSuite ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4:!RSA
 
-    #Force the order server side
+    # Force the order server side
     #SSLHonorCipherOrder on
 
     # Disable SSLv3 (with recent versions of OpenSSL, older should already be disabled, but can explicitly deny them if still using 0.9.8 for some reason).
@@ -30,22 +27,21 @@ NameVirtualHost *:80
     #SSLProxyProtocol all -SSLv3
 
     # AllowOverride All
-    ServerAdmin punches.chris@gmail.com  
+    ServerAdmin punches.chris@gmail.com
   
     ProxyRequests Off
     ProxyPreserveHost On
-    ServerAlias {{ ES_INSTANCE_DNS_NAME }}
+    ServerAlias {{ es_dns_name }}
     
     # internal -- recommended for production for stability and security concerns
-    ProxyPass / http://127.0.0.1:{{ ES_PORT }}/
-    ProxyPassReverse / http://127.0.0.1:{{ ES_PORT }}/
+    ProxyPass / http://127.0.0.1:{{ es_port }}/
+    ProxyPassReverse / http://127.0.0.1:{{ es_port }}/
     
     # external -- juuust in case
     # If you use these you will need to update the port used in the 
     # ES/KB/FB config for options pointing to elasticsearch
     # Do not use these options.  Placeholder for Perf testing and debugging.
-    #ProxyPass / http://{{ ES_INSTANCE_DNS_NAME }}:{{ ES_PORT }}/
-    #ProxyPassReverse / http://{{ ES_INSTANCE_DNS_NAME }}:{{ ES_PORT }}/ 
-
+    #ProxyPass / http://{{ es_dns_name }}:{{ es_port }}/
+    #ProxyPassReverse / http://{{ es_dns_name }}:{{ es_port }}/ 
 </VirtualHost>
 

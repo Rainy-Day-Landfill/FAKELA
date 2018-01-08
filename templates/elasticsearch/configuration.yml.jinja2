@@ -15,13 +15,13 @@
 #
 # Use a descriptive name for your cluster:
 #
-cluster.name: "{{ ES_INSTANCE_NAME }}"
+cluster.name: "{{ es_instance_name }}"
 #
 # ------------------------------------ Node ------------------------------------
 #
 # Use a descriptive name for the node:
 #
-node.name: "{{ ES_INSTANCE_NAME }}-1"
+node.name: "{{ es_instance_name }}-1"
 #
 # Add custom attributes to the node:
 #
@@ -31,11 +31,11 @@ node.name: "{{ ES_INSTANCE_NAME }}-1"
 #
 # Path to directory where to store the data (separate multiple locations by comma):
 #
-path.data: {{ ES_DATA }}
+path.data: {{ es_data_dir }}
 #
 # Path to log files:
 #
-path.logs: "{{ ES_LOGS }}"
+path.logs: "{{ es_logs_dir }}"
 #
 # ----------------------------------- Memory -----------------------------------
 #
@@ -53,13 +53,13 @@ path.logs: "{{ ES_LOGS }}"
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
-# it just blatantly ignores these settings
-network.bind_host: "{{ ES_BIND_HOST }}"
-network.host: "{{ ES_BIND_HOST }}"
+# Buyer beware if you don't bind to localhost and reverse proxy
+network.bind_host: "{{ es_bind_host }}"
+network.host: "{{ es_bind_host }}"
 #
 # Set a custom port for HTTP:
 #
-http.port: "{{ ES_PORT }}"
+http.port: "{{ es_port }}"
 #
 # For more information, consult the network module documentation.
 #

@@ -9,14 +9,14 @@
     #
     # This Java task needs more abstraction.
     # Can't use get_url here or it'll fail.  Oracle requires magic that OpenJDK doesn't.
-    shell: 'wget -P /tmp/ --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" {{ JDK_URL }}'
+    shell: 'wget -P /tmp/ --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" {{ java_download_url }}'
 
   - name: "Extract Java Development Kit"
-    unarchive: src=/tmp/{{ JDK_FILENAME }} dest={{ ES_HOME }} remote_src=yes
+    unarchive: src=/tmp/{{ java_filename }} dest={{ es_home }} remote_src=yes
 
   - name: "Fix Java Path"
     # Thanks, ansible
-    command: /bin/sh -c 'rm -Rf {{ JDK_PATH }}; sleep 1; mv -f {{ ES_HOME }}/jdk* {{ JDK_PATH }}'
+    command: /bin/sh -c 'rm -Rf {{ java_home_dir }}; sleep 1; mv -f {{ es_home_dir }}/jdk* {{ java_home_dir }}'
 
-  - name: "Set ownership of {{ JDK_PATH }} recursively to {{ ES_USR }}:{{ ES_GRP }}"
-    file: dest={{ JDK_PATH }} owner={{ ES_USR }} group={{ ES_GRP }} recurse=yes
+  - name: "Set ownership of {{ java_home_dir }} recursively to {{ es_service_user }}:{{ es_service_group }}"
+    file: dest={{ java_home_dir }} owner={{ es_service_user }} group={{ es_service_group }} recurse=yes

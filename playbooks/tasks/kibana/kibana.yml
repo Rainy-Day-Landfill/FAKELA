@@ -9,57 +9,57 @@
 
   - name: "Download/Extract the Kibana Tarball"
     unarchive:
-      src: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ ES_VERSION }}-linux-x86_64.tar.gz"
+      src: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kb.version }}-linux-x86_64.tar.gz"
       dest: "{{ kibana_base_path }}"
       remote_src: yes
 
   - name: "Fix Kibana Path"
     # thanks, ansible
-    command: /bin/sh -c 'rm -Rf {{ KB_PATH }}; sleep 1; mv -f {{ kibana_base_path }}/kibana-{{ ES_VERSION }}* {{ KB_PATH }}'
+    command: /bin/sh -c 'rm -Rf {{ kb.home_dir }}; sleep 1; mv -f {{ kibana_base_path }}/kibana-{{ kb.version }}* {{ kb.home_dir }}'
 
-  - name: "Create group {{ KB_GRP }}"
+  - name: "Create group {{ kb.service_user }}"
     # This is a security need -- running as dedicated user and group to 
     # safegaurd against any arbitrary code execution or filesystem access 
     # exploits.  And also cats.
     group:
-      name: "{{ KB_GRP }}"
+      name: "{{ kb.service_group }}"
       state: present
 
-  - name: "Create user {{ KB_USR }}"
+  - name: "Create user {{ kb.service_user }}"
     user:
-      name: "{{ KB_USR }}"
+      name: "{{ kb.service_user }}"
         # Important.  Prevents ability to log in remotely as the service 
         # account.  Password is also not set to further ensure that doesn't 
         # happen.  Existing accounts with proper sudoer permissions excepted.
       shell: "/bin/nologin"
-      group: "{{ KB_GRP }}"
+      group: "{{ kb.service_group }}"
 
   - name: "Install kibana configuration"
-    template: src=../templates/kibana.yml.jinja2 dest={{ KB_CONF }} force=yes 
+    template: src=../templates/kibana.yml.jinja2 dest={{ kb.conf_dir }} force=yes 
 
     # set the permissions on the directory
-  - name: "Set ownership of {{ KB_HOME }} recursively to {{ KB_USR }}:{{ KB_GRP }}"
-    file: dest={{ KB_HOME }} owner={{ KB_USR }} group={{ KB_GRP }} recurse=yes
+  - name: "Set ownership of {{ kb.home_dir }} recursively to {{ kb.service_user }}:{{ kb.service_group }}"
+    file: dest={{ kb.home_dir }} owner={{ kb.service_user }} group={{ kb.service_group }} recurse=yes
 
   - name: "Create the pid dir"
     file:
-      path: "{{ KB_PID_PATH }}"
+      path: "{{ kb.pid_dir }}"
       state: directory
 
   - name: "Delete the Kibana Index"
     # this is a hack because none of these services are actually api driven internally
-    command: "curl -XDELETE \"http://{{ ES_INSTANCE_DNS_NAME }}/.kibana\" -H \"Content-Type: application/json\""
+    command: "curl -XDELETE \"{{ kb.elasticsearch_url }}/.kibana\" -H \"Content-Type: application/json\""
     ignore_errors: yes
 
   - name: "Set Default Index Pattern"
-    command: "curl -XPOST \"http://{{ ES_INSTANCE_DNS_NAME }}/.kibana/doc/index-pattern:{{ FB_INDEX_NAME }}\" -H \"Content-Type: application/json\" -d \"{  \"type\" : \"index-pattern\",  \"index-pattern\" : { \"title\": \"{{ FB_INDEX_NAME }}\", \"timeFieldName\": \"@timestamp\"  } }\""
+    command: "curl -XPOST \"{{ kb.elasticsearch_url }}/.kibana/doc/index-pattern:{{ fb.index_name }}\" -H \"Content-Type: application/json\" -d \"{  \"type\" : \"index-pattern\",  \"index-pattern\" : { \"title\": \"{{ FB_INDEX_NAME }}\", \"timeFieldName\": \"@timestamp\"  } }\""
 
   - name: "Create the log dir"
     file:
-      path: "{{ KB_LOGS }}"
+      path: "{{ kb.logs_dir }}"
       state: directory
-      owner: "{{ KB_USR }}"
-      group: "{{ KB_GRP }}"
+      owner: "{{ kb.service_user }}"
+      group: "{{ kb.service_group }}"
       
   - name: "Place systemd system unit target"
     # Need to do this outside of the systemd module so we can use a template
@@ -85,4 +85,3 @@
       enabled: yes
       masked: no
       state: restarted
-

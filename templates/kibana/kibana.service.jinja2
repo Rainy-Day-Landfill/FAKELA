@@ -1,24 +1,19 @@
 # rendered on {{ template_run_date }}
 # updated
 [Unit]
-Description=Elasticsearch
+Description=Kibana
 Documentation=http://www.elastic.co
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-RuntimeDirectory=elasticsearch
-Environment=ES_HOME={{ ES_HOME }}
-Environment=ES_PATH_CONF={{ ES_CONF }}
-Environment=PID_DIR={{ ES_PID_PATH }}
-EnvironmentFile={{ ES_ENV_FILE }}
+RuntimeDirectory=kibana
+WorkingDirectory={{ kb_home_dir }}
 
-WorkingDirectory={{ ES_HOME }}
+User={{ kb_service_user }}
+Group={{ kb_service_group }}
 
-User={{ ES_USR }}
-Group={{ ES_GRP }}
-
-ExecStart={{ ES_HOME }}/bin/elasticsearch -p {{ ES_PID_PATH }}/elasticsearch.pid --quiet
+ExecStart={{ kb_home_dir }}/bin/kibana -c {{ kb_conf_dir }}
 
 # StandardOutput is configured to redirect to journalctl since
 # some error messages may be logged in standard output before
@@ -39,7 +34,9 @@ LimitNPROC=4096
 LimitAS=infinity
 
 # Specifies the maximum file size
-LimitFSIZE=infinity
+# Assume EXT4 unless told otherwise
+# If a file is larger than 16T there are other issues.
+LimitFSIZE=16000000000000
 
 # Disable timeout logic and wait until process is stopped
 TimeoutStopSec=0
@@ -50,15 +47,9 @@ KillSignal=SIGTERM
 # Send the signal only to the JVM rather than its control group
 KillMode=process
 
-# Java process is never killed
-SendSIGKILL=no
+SendSIGKILL=yes
 
-# When a JVM receives a SIGTERM signal it exits with code 143
-SuccessExitStatus=143
 
 [Install]
 WantedBy=multi-user.target
 
-# Built by -C, but mostly stolen shamelessly from:
-# 	https://github.com/elastic/elasticsearch/blob/master/distribution/src/main/packaging/systemd/elasticsearch.service
-# Using upstream sources to ease distribution packaging later.
