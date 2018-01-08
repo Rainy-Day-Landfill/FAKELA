@@ -1,0 +1,7 @@
+  - name: "Reboot Server"
+    # - this part is due to a bug in sysctl in ubuntu 16.04 LTS that
+    # causes it to look in the wrong place for some runtime configurable 
+    # kernel parameters
+    # - delay is aesthetic, keeps ansible from inaccurate reporting on 
+    # last task
+    command: "/sbin/shutdown -r +1"

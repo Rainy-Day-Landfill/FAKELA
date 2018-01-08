@@ -1,0 +1,67 @@
+  - name: "Download/Extract the Kibana Tarball"
+    unarchive:
+      src: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kb_version }}-linux-x86_64.tar.gz"
+      dest: "{{ kibana_base_path }}"
+      remote_src: yes
+
+  - name: "Fix Kibana Path"
+    # thanks, ansible
+    command: /bin/sh -c 'rm -Rf {{ kb_home_dir }}; sleep 1; mv -f {{ kibana_base_path }}/kibana-{{ kb_version }}* {{ kb_home_dir }}'
+
+  - name: "Create group {{ kb_service_user }}"
+    # This is a security need -- running as dedicated user and group to 
+    # safegaurd against any arbitrary code execution or filesystem access 
+    # exploits.  And also cats.
+    group:
+      name: "{{ kb_service_group }}"
+      state: present
+
+  - name: "Create user {{ kb_service_user }}"
+    user:
+      name: "{{ kb_service_user }}"
+        # Important.  Prevents ability to log in remotely as the service 
+        # account.  Password is also not set to further ensure that doesn't 
+        # happen.  Existing accounts with proper sudoer permissions excepted.
+      shell: "/bin/nologin"
+      group: "{{ kb_service_group }}"
+
+  - name: "Install kibana configuration"
+    template: src=../templates/kibana.yml.jinja2 dest={{ kb_conf_dir }} force=yes 
+
+    # set the permissions on the directory
+  - name: "Set ownership of {{ kb_home_dir }} recursively to {{ kb_service_user }}:{{ kb_service_group }}"
+    file: dest={{ kb_home_dir }} owner={{ kb_service_user }} group={{ kb_service_group }} recurse=yes
+
+  - name: "Create the pid dir"
+    file:
+      path: "{{ kb_pid_dir }}"
+      state: directory
+
+  - name: "Delete the Kibana Index"
+    # this is a hack because none of these services are actually api driven internally
+    command: "curl -XDELETE \"http://{{ kb_dns_name }}/.kibana\" -H \"Content-Type: application/json\""
+    ignore_errors: yes
+
+  - name: "Set Default Index Pattern"
+    # this api call does not work reliably
+    command: "curl -XPOST \"http://{{ kb_dns_name }}/.kibana/doc/index-pattern:{{ default_index_name }}\" -H \"Content-Type: application/json\" -d \"{  \"type\" : \"index-pattern\",  \"index-pattern\" : { \"title\": \"{{ default_index_name }}\", \"timeFieldName\": \"@timestamp\"  } }\""
+
+  - name: "Create the log dir"
+    file:
+      path: "{{ kb_logs_dir }}"
+      state: directory
+      owner: "{{ kb_service_user }}"
+      group: "{{ kb_service_group }}"
+      
+  - name: "Place systemd system unit target"
+    # Need to do this outside of the systemd module so we can use a template
+    template: src=kibana.service.jinja2 dest=/etc/systemd/system/kibana.service force=yes
+
+  - name: "Install Reverse ProxyPass VirtualHost for Kibana"
+    template: src=kibana_httpd.conf.jinja2 dest=/etc/apache2/sites-available/kibana.conf force=yes
+
+  - name: "Enabling the ProxyPass for Kibana Apache VHost"
+    command: a2ensite kibana
+    notify:
+    - Restart Apache
+    - Restart Kibana

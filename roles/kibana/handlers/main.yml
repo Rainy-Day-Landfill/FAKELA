@@ -1,0 +1,14 @@
+  - name: "Restart Kibana"
+    systemd:
+      name: "kibana"
+      state: restarted
+      enabled: yes
+      masked: no
+
+  - name: "Restart Apache"
+    systemd:
+      name: "apache2"
+      enabled: yes
+      masked: no
+      state: restarted
+

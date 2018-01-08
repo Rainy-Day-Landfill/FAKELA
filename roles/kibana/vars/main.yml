@@ -1,0 +1,11 @@
+
+
+    kb_home_dir: "{{ kibana_base_path }}/kibana-{{ kb_version }}"
+    kb_conf_dir: "{{ kb_home_dir }}/config/kibana.yml"
+
+    kb_port: "5601"
+    kb_host: "127.0.0.1"
+    kb_logs_dir: "/var/log/kibana/{{ kb_instance_name }}"
+    kb_service_user: "kibana"
+    kb_service_group: "kibana"
+    kb_pid_dir: "/var/run/kibana"

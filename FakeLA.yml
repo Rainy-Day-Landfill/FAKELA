@@ -1,0 +1,59 @@
+---
+- name: Apache2 Installation
+  hosts: target_host
+  remote_user: "root"
+  become: true
+  roles:
+  - apache2
+
+- name: ElasticSearch Installation
+  hosts: target_host
+  remote_user: "root"
+  become: true
+  roles:
+  - elasticsearch
+  vars:
+    elasticsearch_base_path: /opt 
+    es_instance_name: "interpolation-buffet"
+    es_dns_name: "elasticsearch.silogroup.org"
+
+- name: Kibana Installation
+  hosts: target_host
+  remote_user: "root"
+  become: true
+  roles:
+  - kibana
+  vars:
+    kibana_base_path: "/opt"
+    kb_version: "6.1.1"
+    es_instance_name: "interpolation-buffet"
+    es_dns_name: "elasticsearch.silogroup.org"
+    default_index_name: "almost-journald"
+    
+    kb_dns_name: "kibana.silogroup.org" 
+    kb_instance_name: "{{ es_instance_name }}"
+
+- name: Filebeat Installation
+  hosts: target_host
+  remote_user: "root"
+  become: true
+  roles:
+  - filebeat
+  vars:
+    filebeat_base_path: "/opt"
+    fb_version: "6.1.1"
+    kb_dns_name: "kibana.silogroup.org"
+    es_dns_name: "elasticsearch.silogroup.org"
+    files_to_index:
+    # Ubuntu
+    - "/var/log/syslog"
+    # RH
+    #- "/var/log/messages"
+
+- name: Production Hotfixes - Run Once
+  hosts: target_host
+  remote_user: "root"
+  become: true
+  roles:
+  - hotfixes
+

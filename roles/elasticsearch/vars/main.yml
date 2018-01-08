@@ -1,0 +1,47 @@
+    # https://github.com/ansible/ansible/issues/8603 !!!
+    # Prevents the following configuration format:
+    #es:
+    #  instance_name: XXXX
+    #  dns_name: XXXX
+    
+
+
+    # the addr to bind to
+    # use internal IP and proxypass from apache, it is safer, more 
+    # stable, and more performant
+    es_bind_host: "127.0.0.1"
+    es_port: "9200"
+
+    es_version: "6.1.1"
+
+    es_pid_dir: "/var/run/elasticsearch"
+
+    # The user and group to run the elasticsearch process as
+    es_service_user: "elasticsearch"
+    es_service_group: "elasticsearch"
+
+    # jvm options as needed
+    es_heap_initial: "1g"
+    es_heap_max: "1g"
+
+    # the url from which elasticsearch should be downloaded from
+    es_download_url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ es_version }}.tar.gz"
+
+    # systemd - where systemd wants elastiscearch to be
+    es_home_dir: "{{ elasticsearch_base_path }}/elasticsearch-{{ es_version }}"
+
+    # systemd - conf dir location
+    es_conf_dir: "{{ es_home_dir }}/config"
+
+    # systemd - where the environment variables it needs set in its runtime go
+    es_environment_file: "{{ es_conf_dir }}/environment"
+
+    # Elasticsearch data storage path
+    es_data_dir: "{{ es_home_dir }}/data"
+    es_logs_dir: "/var/log/elasticsearch/{{ es_instance_name }}"
+
+
+# java
+    java_download_url: "http://download.oracle.com/otn-pub/java/jdk/8u151-b12/e758a0de34e24606bca991d704f6dcbf/jdk-8u151-linux-x64.tar.gz"
+    java_filename: "jdk-8u151-linux-x64.tar.gz"
+    java_home_dir: "{{ es_home_dir }}/java"

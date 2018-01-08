@@ -1,0 +1,85 @@
+  - name: "Download/Extract the Elasticsearch Tarball"
+    unarchive:
+      src: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ es_version }}.tar.gz"
+      dest: "{{ elasticsearch_base_path }}"
+      remote_src: yes
+
+  - name: "Create group {{ es_service_group }}"
+    # This is a security need -- running as dedicated user and group to 
+    # safegaurd against any arbitrary code execution or filesystem access 
+    # exploits.  And also cats.
+    group:
+      name: "{{ es_service_group }}"
+      state: present
+      
+  - name: "Create user {{ es_service_user }}"
+    user:
+      name: "{{ es_service_user }}"
+        # Important.  Prevents ability to log in remotely as the service 
+        # account.  Password is also not set to further ensure that doesn't 
+        # happen.  Existing accounts with proper sudoer permissions excepted.
+      shell: "/bin/nologin"
+      group: "{{ es_service_group }}"
+
+  - name: "Install systemd environment file"
+    template: src=systemd_environment_file.jinja2 dest={{ es_environment_file }} force=yes
+
+  - name: "Install elasticsearch configuration"
+    template: src=configuration.yml.jinja2 dest={{ es_conf_dir }}/elasticsearch.yml force=yes
+
+    # set the permissions on the directory
+  - name: "Set ownership of {{ es_home_dir }} recursively to {{ es_service_user }}:{{ es_service_group }}"
+    file: dest="{{ es_home_dir }}" owner="{{ es_service_user }}" group="{{ es_service_group }}" recurse=yes
+
+  - name: "Create logs dir"
+    file:
+      path: "{{ es_logs_dir }}"
+      state: directory
+      owner: elasticsearch
+      group: elasticsearch
+
+  - name: "Create the pid dir"
+    file:
+      path: "{{ es_pid_dir }}"
+      state: directory
+      owner: elasticsearch
+      group: elasticsearch
+
+  - name: "Download dedicated Java Runtime"
+    # It is a dependency and the JRE available can't be assumed to be 
+    # compatible or even present.  In addition to this, a 
+    # distribution-independent solution here would not use the package 
+    # manager due to package name disparity between distributions.  This is 
+    # resolved by having an internal package repository for any runtime 
+    # components used for all OS's in the environment, which is generally a 
+    # good idea when OS continuity is not feasible in an environment.
+    #
+    # This Java task needs more abstraction.
+    # Can't use get_url here or it'll fail.  Oracle requires magic that OpenJDK doesn't.
+    shell: 'wget -P /tmp/ --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" {{ java_download_url }}'
+
+  - name: "Extract Java Development Kit"
+    unarchive: src=/tmp/{{ java_filename }} dest={{ es_home_dir }} remote_src=yes
+
+  - name: "Fix Java Path"
+    # Thanks, ansible
+    command: /bin/sh -c 'rm -Rf {{ java_home_dir }}; sleep 1; mv -f {{ es_home_dir }}/jdk* {{ java_home_dir }}'
+
+  - name: "Set ownership of {{ java_home_dir }} recursively to {{ es_service_user }}:{{ es_service_group }}"
+    file: dest={{ java_home_dir }} owner={{ es_service_user }} group={{ es_service_group }} recurse=yes
+
+  - name: "Place systemd system unit target"
+    # Need to do this outside of the systemd module so we can use a template
+    template: src=systemd_unit.service.jinja2 dest=/etc/systemd/system/elasticsearch.service force=yes
+
+  # This is for the apache socket handling and routing
+  - name: "Install Reverse ProxyPass VirtualHost for ElasticSearch"
+    template: src=elasticsearch_httpd.conf.jinja2 dest=/etc/apache2/sites-available/elasticsearch.conf force=yes
+
+  # This is for the apache socket handling and routing
+  - name: "Enabling the site for ElasticSearch Apache VHost"
+    command: a2ensite elasticsearch
+    notify:
+    - "Restart Apache"
+    - "Restart ElasticSearch"
+

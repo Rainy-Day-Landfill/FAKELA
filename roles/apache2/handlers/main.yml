@@ -1,0 +1,7 @@
+  - name: "Restart Apache"
+    systemd:
+      name: "apache2"
+      enabled: yes
+      masked: no
+      state: restarted
+

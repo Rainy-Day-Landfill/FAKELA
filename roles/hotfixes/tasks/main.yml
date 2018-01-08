@@ -1,0 +1,8 @@
+  - name: "Sysctl HotFix for MAX_MAP_COUNT"
+    # ubuntu-specific hotfix #1
+    template: src=sysctl_elasticsearch.conf.jinja2 dest=/etc/sysctl.d/elasticsearch.conf force=yes
+    # unfortunately sysctl is broken in 16.04 LTS :(
+    # not required for pre-prod environments (except perf)
+    notify:
+    - Reboot Server
+
