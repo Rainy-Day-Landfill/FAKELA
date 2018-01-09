@@ -30,3 +30,8 @@ I use A records but if you are testing on a single local VM you can easily do th
 Warning:  Due to a sysctl bug in Ubuntu 16.04 LTS caused by a change in procfs tree schema you will absolutely have to restart on a fresh install for production deployments.
 
 This version works around numerous bugs in Ansible, Elasticsearch, sysctl, and kibana.
+
+# Index Management
+
+For index pruning, I'd recommend checking out my Langolier project:
+https://github.com/cmpunches/Langolier
