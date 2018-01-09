@@ -154,8 +154,8 @@ output.elasticsearch:
   index: "{{ fb_index_name }}"
   # Optional protocol and basic auth credentials.
   #protocol: "https"
-  #username: "elastic"
-  #password: "changeme"
+  username: "{{ es_username }}"
+  password: "{{ es_password }}"
 
 #----------------------------- Logstash output --------------------------------
 #output.logstash:

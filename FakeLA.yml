@@ -53,6 +53,9 @@
   roles:
   - filebeat
   vars:
+    es_username: "bagira"
+    es_password: "this_is_not_my_superpower"
+
     filebeat_base_path: "/opt"
     fb_version: "6.1.1"
     kb_dns_name: "kibana.silogroup.org"
