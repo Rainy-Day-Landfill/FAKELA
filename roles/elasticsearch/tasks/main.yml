@@ -71,6 +71,8 @@
   - name: "Place systemd system unit target"
     # Need to do this outside of the systemd module so we can use a template
     template: src=systemd_unit.service.jinja2 dest=/etc/systemd/system/elasticsearch.service force=yes
+    notify:
+    - "Restart ElasticSearch"
 
   # This is for the apache socket handling and routing
   # Trust apache security more than ES and KB.

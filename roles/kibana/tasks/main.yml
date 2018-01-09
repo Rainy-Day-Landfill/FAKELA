@@ -56,6 +56,8 @@
   - name: "Place systemd system unit target"
     # Need to do this outside of the systemd module so we can use a template
     template: src=kibana.service.jinja2 dest=/etc/systemd/system/kibana.service force=yes
+    notify:
+    - Restart Kibana
 
   - stat: path=/tmp/x-pack-{{ xp_version }}.zip
     register: xp_downloaded
@@ -66,12 +68,12 @@
     shell: 'wget -P /tmp/ --no-check-certificate -c https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-{{ xp_version }}.zip'
     when: xp_downloaded.stat.exists == False
     
-  - stat: path="{{ kb_home_dir }}/plugins/x-pack"
+  - stat: path={{ kb_home_dir }}/plugins/x-pack
     register: xp_installed
 
-  - name: "Install X-Pack for Security Features"
+  - name: "Install X-Pack for Security Features (Go Get Lunch - Inexcusably slow)"
     shell: '{{ kb_home_dir }}/bin/kibana-plugin install file:///tmp/x-pack-{{ xp_version }}.zip'
-    when: xp_installed.stat.exists == False
+    when: not xp_installed.stat.exists
 
   - name: "Install Reverse ProxyPass VirtualHost for Kibana"
     template: src=kibana_httpd.conf.jinja2 dest=/etc/apache2/sites-available/kibana.conf force=yes
