@@ -72,4 +72,6 @@
   become: true
   roles:
   - hotfixes
+  vars:
+    firewall_port: 80
 
