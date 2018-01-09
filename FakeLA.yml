@@ -66,7 +66,7 @@
     # RH
     #- "/var/log/messages"
     
-- name: Production Hotfixes - Will Reboot
+- name: Production Hotfixes
   hosts: target_host
   remote_user: "root"
   become: true

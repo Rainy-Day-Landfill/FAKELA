@@ -5,6 +5,9 @@
       proto: tcp
       state: enabled
 
+  - name: "Fix Max Map Size Count to avoid reboot"
+    shell: "sysctl -w vm.max_map_count=262144"
+
 #  - name: "Sysctl HotFix for MAX_MAP_COUNT"
 #    # ubuntu-specific hotfix #1
 #    template: src=sysctl_elasticsearch.conf.jinja2 dest=/etc/sysctl.d/elasticsearch.conf force=yes
