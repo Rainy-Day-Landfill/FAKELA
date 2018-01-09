@@ -6,7 +6,13 @@ This is an ansible distribution of:
 - Apache
 - Kibana
 - Elasticsearch
+
+On
+
 - Linux
+
+With 
+
 - Ansible
 
 Intended for Ubuntu 16.04 LTS targets.
